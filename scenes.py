@@ -5,13 +5,16 @@ from cocos.scene import Scene
 from cocos.layer import Layer, ColorLayer
 from cocos.collision_model import CollisionManagerGrid
 from cocos.sprite import Sprite
+from cocos.audio.effect import Effect
+from cocos.euclid import Vector2
+from cocos.actions import Delay, CallFunc
 
 from tanks import *
 from base import keyboard
 from bullet import Bullet
 from wall import Wall
-from settings import wall_list
-from explosion import Explosion
+from settings import wall_list, key_dict
+from explosion import Explosion, ExplosionP
 
 
 class MajorLayer(Layer):
@@ -41,13 +44,18 @@ class MajorLayer(Layer):
                                             10, 10)
         # 计分板
         self.score = 0
+        # 音效
+        self.fire_sound = Effect('fire.wav')
+        self.explode_sound = Effect('bang.wav')
+        self.bullet_hit_sound = Effect('blast.wav')
+        self.get_hit_sound = Effect('hit.wav')
         # 增加墙壁
         self.add_wall()
         # 添加我方坦克
         self.add_player()
         # 每帧调用方法
         self.schedule(self.key)
-        self.schedule(self.collisons_test)
+        # self.schedule(self.collisons_test)
         self.schedule(self.update)
         self.schedule(self.boundary)
         self.schedule(self.out_range_bullet)
@@ -59,9 +67,16 @@ class MajorLayer(Layer):
     
     def add_wall(self):
         for i in wall_list:
-            w = Wall(*i)
-            self.wall_dict[w] = str(w)
-            self.add(w, z=w.z, name=self.wall_dict[w])
+            coo = list(i)
+            self.create_wall(coo[0] - 25, coo[1] + 25)
+            self.create_wall(coo[0] + 25, coo[1] + 25)
+            self.create_wall(coo[0] + 25, coo[1] - 25)
+            self.create_wall(coo[0] - 25, coo[1] - 25)
+    
+    def create_wall(self, x, y):
+        w = Wall(x, y)
+        self.wall_dict[w] = str(w)
+        self.add(w, z=w.z, name=self.wall_dict[w])
 
     def add_player(self):
         self.tank = Tank(50, 450)
@@ -80,8 +95,45 @@ class MajorLayer(Layer):
             if random() > 0.75:
                 b = p.fire(dt)
                 if b:
+                    self.play_fire_sound(p)
                     self.bullet_dicte[b] = str(b)
                     self.add(b, z=b.z, name=self.bullet_dicte[b])
+    
+    def in_screen(self, p):
+        '''判断是否在屏幕显示范围内'''
+        v = p.point_to_world(Vector2(0, 0))
+        if (0 < v.x < 2 * self.center[0]) and ( 0 < v.y < 2 * self.center[1]):
+            return True
+        else:
+            return False
+
+    def play_fire_sound(self, p):
+        if self.in_screen(p):
+            self.fire_sound.play()
+    
+    def play_explode_sound(self, p):
+        if self.in_screen(p):
+            self.explode_sound.play()
+    
+    def play_get_git_sound(self, p):
+        if self.in_screen(p):
+            self.get_hit_sound.play()
+    
+    def play_bullet_hit_sound(self, p):
+        if self.in_screen(p):
+            self.bullet_hit_sound.play()
+    
+    def add_explosion(self, i):
+        '''坦克爆炸'''
+        ep = ExplosionP(i.cshape_x, i.cshape_y, 20, 20, i.c)
+        self.add(ep, z=ep.z)
+        self.play_explode_sound(i)
+    
+    def add_bullet_hit(self, i):
+        '''子弹命中'''
+        ep = Explosion(i.cshape_x, i.cshape_y, 20, 20, i.c)
+        self.add(ep, z=ep.z)
+        self.play_bullet_hit_sound(i)
 
     def add_enermy(self, dt):
         '''添加敌人'''
@@ -103,32 +155,35 @@ class MajorLayer(Layer):
     def key(self, dt):
         '''响应键盘按键'''
         # 空格开火
-        if keyboard[key.SPACE]:
+        if keyboard[key_dict['fire:']]:
             bullet = self.tank.fire(dt)
             if bullet:
+                self.fire_sound.play() # 播放音效
                 # 开火成功则将炮弹加入self
                 self.bullet_dict[bullet] = str(bullet)
                 self.add(bullet, z=bullet.z, name=self.bullet_dict[bullet])
         # 移动操作
-        if keyboard[key.UP]:
+        if keyboard[key_dict['up:']]:
             self.tank.move_up(dt)
-        elif keyboard[key.DOWN]:
+        elif keyboard[key_dict['down:']]:
             self.tank.move_down(dt)
-        elif keyboard[key.LEFT]:
+        elif keyboard[key_dict['left:']]:
             self.tank.move_left(dt)
-        elif keyboard[key.RIGHT]:
+        elif keyboard[key_dict['right:']]:
             self.tank.move_right(dt)
         # 测试用
         if keyboard[key.P]:
             print((self.tank.cshape_x, self.tank.cshape_y), (self.tank.x, self.tank.y))
         if keyboard[key.O]:
             print(self.get_children())
+        
+        self.collisons_test(dt)
     
     def collisons_test(self, dt):
         '''碰撞相关检测'''
-        # 当一对坦克不再碰撞时，解除移动限制
+        # 当一对移动受限物体不再碰撞时，解除移动限制
         for t1, t2, n in self.blocking_pair:
-            if not self.collman.they_collide(t1, t2):
+            if not self.collman.they_collide(t1, t2) or not (t1.is_running and t2.is_running):
                 if n == 0:
                     t1.can_move[2] = 1
                     t2.can_move[3] = 1
@@ -182,13 +237,12 @@ class MajorLayer(Layer):
             else:
                 # 判断碰撞方向，并锁定相应的移动方式
                 self.colliding(o1, o2)
-                
         # 处理销毁列表中的对象
         for i in self.toremove:
             if isinstance(i, Bullet):
                 # 添加爆炸效果
-                ep = Explosion(i.cshape_x, i.cshape_y, 20, 20, i.c)
-                self.add(ep, z=ep.z)
+                self.add_bullet_hit(i)
+                # 删除
                 if i in self.bullet_dict:
                     self.remove(self.bullet_dict[i])
                     del self.bullet_dict[i]
@@ -196,11 +250,11 @@ class MajorLayer(Layer):
                     self.remove(self.bullet_dicte[i])
                     del self.bullet_dicte[i]
             elif isinstance(i, Panzer):
+                # 爆炸效果
+                self.add_explosion(i)
+                # 删除坦克
                 self.remove(self.enermy_dict[i])
                 del self.enermy_dict[i]
-                # 爆炸效果
-                ep = Explosion(i.cshape_x, i.cshape_y, 20, 20, i.c)
-                self.add(ep, z=ep.z)
                 # 销毁敌方坦克时，相关数据变动
                 self.active_enermy_num -= 1
                 self.totle_enermy_num += 1
@@ -208,10 +262,18 @@ class MajorLayer(Layer):
             elif isinstance(i, Tank):
                 self.remove('p1')
                 # 爆炸效果
-                ep = Explosion(i.cshape_x, i.cshape_y, 20, 20, i.c)
-                self.add(ep, z=ep.z)
+                self.add_explosion(i)
                 # 玩家重生
-                self.add_player()
+                delay_act = Delay(1) + CallFunc(self.add_player)
+                self.do(delay_act)
+            elif isinstance(i, Wall):
+                # 墙壁可以抵挡一定次数的攻击
+                self.play_get_git_sound(i)
+                if i.durability:
+                    i.get_hit()
+                else:
+                    self.remove(self.wall_dict[i])
+                    del self.wall_dict[i]
         # 清空销毁列表
         self.toremove.clear()
     
@@ -245,7 +307,7 @@ class MajorLayer(Layer):
         # 依次检查炮弹
         for b in bullet_list:
             if not (0 <= b.cshape_x <= 1300 and 0 <= b.cshape_y <= 1300):
-                if abs(b.x - self.tank.x) > self.center[0] or abs(b.y - self.tank.y) > self.center[1]:
+                if not self.in_screen(b):
                     if b in self.bullet_dict:
                         self.remove(self.bullet_dict[b])
                         del self.bullet_dict[b]
@@ -296,9 +358,9 @@ class BgLayer(ColorLayer):
     def __init__(self):
         super().__init__(100, 100, 100, 255, 2340, 1144)
         self.position = (-1170, 0)
-        # self.bgsprite = Sprite('bg.jpg')
-        # self.bgsprite.position = 0,503
-        # self.add(self.bgsprite)
+        self.bgsprite = Sprite('dimian.png')
+        self.bgsprite.position = 1170, 450
+        self.add(self.bgsprite)
 
 
 class MajorScene(Scene):
@@ -306,9 +368,11 @@ class MajorScene(Scene):
         super().__init__()
         self.majorlayer = MajorLayer()
         self.add(self.majorlayer)
+        self.scene = scene
+        self.start_music = Effect('start.wav')
+        self.start_music.play()
         self.schedule(self.p)
-        self.scene = scene()
     
     def p(self, dt):
-        if keyboard[key.Q]:
-            director.push(self.scene)
+        if keyboard[key_dict['pause:']]:
+            director.push(self.scene())

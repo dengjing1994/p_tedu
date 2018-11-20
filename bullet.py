@@ -7,7 +7,7 @@ from base import Actor
 
 class Bullet(Actor):
     '''炮弹'''
-    def __init__(self, x, y, direction, m, c=0, hw=20, hh=20):
+    def __init__(self, x, y, direction, m, c=0, hw=20, hh=20, *args):
         if direction == 0:
             y += m
         elif direction == 1:
@@ -17,8 +17,10 @@ class Bullet(Actor):
         elif direction == 3:
             x += m
         super().__init__(x, y, hw, hh, 2*c)
-        s = Sprite('zidan.png')
-        self.add(s)
+        if len(args) != 4:
+            args = ('zidan0.png', 'zidan1.png', 'zidan2.png', 'zidan3.png')
+        self.s = Sprite(args[direction])
+        self.add(self.s)
         self.anchor = (0, 0)
         self.scale = 0.1
         self.direction = direction
@@ -29,13 +31,15 @@ class Bullet(Actor):
         # 判断方向并进行移动
         if self.direction == 0:
             self.cshape_y += 300 * dt
-            # self.rotation = 0
         elif self.direction == 1:
             self.cshape_y -= 300 * dt
-            self.rotation = 180
         elif self.direction == 2:
             self.cshape_x -= 300 * dt
-            self.rotation = -90
         elif self.direction == 3:
             self.cshape_x += 300 * dt
-            self.rotation = 90
+
+
+class Bullet_t1(Bullet):
+    def __init__(self, *args):
+        super().__init__(*args)
+        self.s.color = (255, 0, 0)

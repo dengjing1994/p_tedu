@@ -6,7 +6,7 @@ from cocos.sprite import Sprite
 from cocos.euclid import Vector2
 
 from base import Actor, keyboard
-from bullet import Bullet
+from bullet import Bullet, Bullet_t1
 
 
 class Tank(Actor):
@@ -20,6 +20,9 @@ class Tank(Actor):
         self.anchor = (0, 0)
         self.scale = 0.2
         self.cdtime = 0 # 开火剩余cd时间
+        # 弹药选择
+        self.b_list = [Bullet, Bullet_t1]
+        self.b_level = 0
         self.schedule(self.update_attr) # 每帧调用以更新相关属性
 
     def set_sprite(self, args):
@@ -34,45 +37,46 @@ class Tank(Actor):
         '''开火'''
         if self.cdtime == 0:
             # 剩余cd时间为0时开火，在自身位置产生一个子弹对象，并返回给调用者
-            bullet = Bullet(self.cshape_x, self.cshape_y, self.direction, self.hh, self.c)
+            bullet = self.b_list[self.b_level](self.cshape_x, self.cshape_y, self.direction, self.hh, self.c)
             self.cdtime = 1 # 进入cd时间
+            self.b_level = (self.b_level + 1) % 2 # 测试换炮弹
             return bullet
 
     def move_up(self, dt):
         '''向上移动'''
+        if self.can_move[0] and self.direction == 0:
+            self.cshape_y += 100 * dt
         for i in self.sprite_list:
             i.do(Hide())
         self.sprite_list[0].do(Show())
         self.direction = 0
-        if self.can_move[0]:
-            self.cshape_y += 100 * dt
 
     def move_down(self, dt):
         '''向下移动'''
+        if self.can_move[1] and self.direction == 1:
+            self.cshape_y -= 100 * dt
         for i in self.sprite_list:
             i.do(Hide())
         self.sprite_list[1].do(Show())
         self.direction = 1
-        if self.can_move[1]:
-            self.cshape_y -= 100 * dt
 
     def move_left(self, dt):
         '''向左移动'''
+        if self.can_move[2] and self.direction == 2:
+            self.cshape_x -= 100 * dt
         for i in self.sprite_list:
             i.do(Hide())
         self.sprite_list[2].do(Show())
         self.direction = 2
-        if self.can_move[2]:
-            self.cshape_x -= 100 * dt
 
     def move_right(self, dt):
         '''向右移动'''
+        if self.can_move[3] and self.direction == 3:
+            self.cshape_x += 100 * dt
         for i in self.sprite_list:
             i.do(Hide())
         self.sprite_list[3].do(Show())
         self.direction = 3
-        if self.can_move[3]:
-            self.cshape_x += 100 * dt
     
     def update_attr(self, dt):
         # 计算剩余cd时间
