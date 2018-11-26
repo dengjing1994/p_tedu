@@ -25,7 +25,7 @@ class Setting(Layer):
         # 产生用于判断的矩形和位置
         self.cshape01 = AARectShape(Vector2(x, y), half_width, half_height)
         self.cshape23 = AARectShape(Vector2(x, y), half_height, half_width)
-        self.direction = 0 # 默认朝向为上(0),其他方向为下(1)，左(2)，右(3)
+        self.direction = 3 # 方向为上(0),下(1)，左(2)，右(3)
         self.cshape = self.cshape01
         self.cshape_x = x
         self.cshape_y = y

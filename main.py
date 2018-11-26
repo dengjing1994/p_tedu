@@ -8,7 +8,7 @@ from settings import key_dict
 
 def main():
     # 初始化
-    director.init(audio_backend='sdl')
+    director.init(width=850, height=560, audio_backend='sdl')
     # 处理键盘输入
     director.window.push_handlers(keyboard)
     # 建立开始菜单场景

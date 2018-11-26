@@ -18,7 +18,7 @@ class Bullet(Actor):
             x += m
         super().__init__(x, y, hw, hh, 2*c)
         if len(args) != 4:
-            args = ('zidan0.png', 'zidan1.png', 'zidan2.png', 'zidan3.png')
+            args = ('pic/zidan0.png', 'pic/zidan1.png', 'pic/zidan2.png', 'pic/zidan3.png')
         self.s = Sprite(args[direction])
         self.add(self.s)
         self.anchor = (0, 0)

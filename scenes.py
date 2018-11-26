@@ -8,12 +8,14 @@ from cocos.sprite import Sprite
 from cocos.audio.effect import Effect
 from cocos.euclid import Vector2
 from cocos.actions import Delay, CallFunc
+from cocos.text import Label
+from cocos.menu import Menu, EntryMenuItem, MenuItem
 
 from tanks import *
 from base import keyboard
 from bullet import Bullet
-from wall import Wall
-from settings import wall_list, key_dict
+from wall import Wall, Iron
+from settings import wall_list, iron_list, key_dict
 from explosion import Explosion, ExplosionP
 
 
@@ -44,11 +46,12 @@ class MajorLayer(Layer):
                                             10, 10)
         # 计分板
         self.score = 0
+        self.is_game_over = 1
         # 音效
-        self.fire_sound = Effect('fire.wav')
-        self.explode_sound = Effect('bang.wav')
-        self.bullet_hit_sound = Effect('blast.wav')
-        self.get_hit_sound = Effect('hit.wav')
+        self.fire_sound = Effect('music/fire.wav')
+        self.explode_sound = Effect('music/bang.wav')
+        self.bullet_hit_sound = Effect('music/blast.wav')
+        self.get_hit_sound = Effect('music/hit.wav')
         # 增加墙壁
         self.add_wall()
         # 添加我方坦克
@@ -72,6 +75,10 @@ class MajorLayer(Layer):
             self.create_wall(coo[0] + 25, coo[1] + 25)
             self.create_wall(coo[0] + 25, coo[1] - 25)
             self.create_wall(coo[0] - 25, coo[1] - 25)
+        for i in iron_list:
+            w = Iron(*i)
+            self.wall_dict[w] = str(w)
+            self.add(w, z=w.z, name=self.wall_dict[w])
     
     def create_wall(self, x, y):
         w = Wall(x, y)
@@ -80,7 +87,7 @@ class MajorLayer(Layer):
 
     def add_player(self):
         self.tank = Tank(50, 450)
-        self.add(self.tank, z=self.tank.z, name='p1')
+        self.add(self.tank, z=self.tank.z, name=str(self.tank))
 
     def ai_move(self, dt):
         # 调整ai运动方向
@@ -175,7 +182,7 @@ class MajorLayer(Layer):
         if keyboard[key.P]:
             print((self.tank.cshape_x, self.tank.cshape_y), (self.tank.x, self.tank.y))
         if keyboard[key.O]:
-            print(self.get_children())
+            self.is_game_over -= 1
         
         self.collisons_test(dt)
     
@@ -260,10 +267,11 @@ class MajorLayer(Layer):
                 self.totle_enermy_num += 1
                 self.score += 1
             elif isinstance(i, Tank):
-                self.remove('p1')
+                self.remove(str(self.tank))
                 # 爆炸效果
                 self.add_explosion(i)
                 # 玩家重生
+                self.is_game_over -= 1
                 delay_act = Delay(1) + CallFunc(self.add_player)
                 self.do(delay_act)
             elif isinstance(i, Wall):
@@ -358,7 +366,7 @@ class BgLayer(ColorLayer):
     def __init__(self):
         super().__init__(100, 100, 100, 255, 2340, 1144)
         self.position = (-1170, 0)
-        self.bgsprite = Sprite('dimian.png')
+        self.bgsprite = Sprite('pic/dimian.png')
         self.bgsprite.position = 1170, 450
         self.add(self.bgsprite)
 
@@ -369,10 +377,52 @@ class MajorScene(Scene):
         self.majorlayer = MajorLayer()
         self.add(self.majorlayer)
         self.scene = scene
-        self.start_music = Effect('start.wav')
+        self.game_over = GameOverLayer
+        self.start_music = Effect('music/start.wav')
         self.start_music.play()
         self.schedule(self.p)
     
     def p(self, dt):
+        if self.majorlayer.is_game_over == 0:
+            self.unschedule(self.p)
+            score = self.majorlayer.score
+            self.add(self.game_over(score), z=10)
+            self.remove(self.majorlayer)
         if keyboard[key_dict['pause:']]:
             director.push(self.scene())
+
+
+class GameOverLayer(ColorLayer):
+    def __init__(self, score):
+        size = director.get_window_size()
+        super().__init__(200, 235, 235, 200, size[0], size[1])
+        s = '得分：' + str(score)
+        self.score = Label(s, font_name='WenQuanYi Micro Hei', font_size=36, color=(255, 0, 0, 255))
+        self.score.position = 250, 400
+        self.add(self.score)
+        self.create_entry()
+        self.name = ''
+        self.schedule(self.back_to_menu)
+
+    def back_to_menu(self, dt):
+        if keyboard[key_dict['pause:']]:
+            director.pop()
+    
+    def create_entry(self):
+        self.entry = Menu()
+        self.entry.font_item['font_name'] = 'WenQuanYi Micro Hei'
+        self.entry.font_item['color'] = (255, 0, 0, 255)
+        self.entry.font_item_selected['font_name'] = 'WenQuanYi Micro Hei'
+        self.entry.font_item_selected['color'] = (255, 0, 0, 255)
+        l = []
+        l.append(EntryMenuItem('输入记录名称:', self.update_text, '', max_length=7))
+        l.append(MenuItem('确认', self.ok))
+        self.entry.create_menu(l)
+        self.add(self.entry)
+
+    def update_text(self, value):
+        self.name = value
+    
+    def ok(self):
+        print(self.name)
+        director.pop()

@@ -1,11 +1,12 @@
 import pyglet
 from pyglet.window import key
 from cocos.director import director
-from cocos.menu import Menu, MenuItem, shake, shake_back
+from cocos.menu import Menu, MenuItem, ImageMenuItem, shake, shake_back, LEFT
 from cocos.scenes.transitions import FlipAngular3DTransition
 from cocos.actions import Place
 from cocos.scene import Scene
 from cocos.layer import ColorLayer
+from cocos.sprite import Sprite
 
 from scenes import MajorScene
 from settings import SettingScene
@@ -14,12 +15,12 @@ from settings import SettingScene
 class MainMenu(Menu):
     '''主菜单'''
     def __init__(self):
-        super().__init__('Fighter')
+        super().__init__(' ')
         l = []
-        l.append(MenuItem('Start', self.on_start))
-        l.append(MenuItem('Setting', self.on_setting))
-        l.append(MenuItem('Connect', self.on_connect))
-        l.append(MenuItem('Quit', self.on_quit))
+        l.append(ImageMenuItem('pic/kaishi.png', self.on_start))
+        l.append(ImageMenuItem('pic/keys.png', self.on_setting))
+        l.append(ImageMenuItem('pic/jifen.png', self.on_connect))
+        l.append(ImageMenuItem('pic/tuichu.png', self.on_quit))
         self.create_menu(l, shake(), shake_back())
 
     def on_start(self):
@@ -64,8 +65,12 @@ class PlayMenu(Menu):
 class MainMenuScene(Scene):
     def __init__(self):
         super().__init__()
-        self.add(ColorLayer(0, 0, 255, 255))
-        self.add(MainMenu())
+        self.spr = Sprite('pic/startbg.jpg')
+        self.spr.position = 425, 280
+        self.add(self.spr, z=-1)
+        self.mm = MainMenu()
+        self.mm.scale = 2
+        self.add(self.mm)
 
 
 class PlayMenuScene(Scene):

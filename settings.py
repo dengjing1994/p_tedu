@@ -4,21 +4,28 @@ from pyglet.window import key
 from cocos.director import director
 from cocos.menu import Menu, MenuItem, EntryMenuItem
 from cocos.scene import Scene
+from cocos.sprite import Sprite
 
 screen_width = 720
 screen_height = 600
 
-wall_list = [(50, 650),
+wall_list = [
     (150, 150), (150, 350), (150, 950), (150, 1150),
     (250, 150), (250, 350), (250, 550), (250, 750), (250, 950), (250, 1150),
     (350, 150), (350, 350), (350, 550), (350, 750), (350, 950), (350, 1150),
     (450, 550), (450, 650), (450, 750),
-    (550, 50), (550, 250), (550, 350), (550, 550), (550, 750), (550, 950), (550, 1050), (550, 1250),
+    (550, 250), (550, 350), (550, 550), (550, 750), (550, 950), (550, 1050),
     (750, 150), (750, 350), (750, 550), (750, 750), (750, 950), (750, 1150),
     (850, 150), (850, 350), (850, 550), (850, 750), (850, 950), (850, 1150),
-    (950, 150), (950, 350), (950, 550), (950, 650), (950, 750), (950, 950), (950, 1150),
+    (950, 150), (950, 350), (950, 550), (950, 750), (950, 950), (950, 1150),
     (1050, 150), (1050, 350), (1050, 550), (1050, 750), (1050, 950), (1050, 1150),
     (1150, 150), (1150, 350), (1150, 550), (1150, 750), (1150, 950), (1150, 1150)
+]
+
+iron_list = [
+    (50, 650),
+    (550, 50), (550, 1250),
+    (950, 650)
 ]
 
 key_dict = {
@@ -32,6 +39,11 @@ key_dict = {
 
 
 class EntryMenuItemS(EntryMenuItem):
+    # def __init__(self, *args):
+    #     super().__init__(*args)
+    #     self.bg = Sprite('pic/ditu.png')
+    #     self.add(self.bg)
+    
     def on_text(self, text):
         if isinstance(text, str):
             if text.upper() not in self._value:
@@ -52,15 +64,49 @@ class EntryMenuItemS(EntryMenuItem):
 
 class SettingMenu(Menu):
     def __init__(self):
-        super().__init__('Keyboard Setting')
+        super().__init__(' ')
+        # 字体
+        self.font_title = {
+            'text': 'title',
+            'font_name': '黑体',
+            'font_size': 56,
+            'color': (255, 215, 0, 255),
+            'bold': False,
+            'italic': False,
+            'anchor_y': 'center',
+            'anchor_x': 'center',
+            'dpi': 96,
+            'x': 0, 'y': 0,
+        }
+        self.font_item = {
+            'font_name': '黑体',
+            'font_size': 32,
+            'bold': False,
+            'italic': False,
+            'anchor_y': 'center',
+            'anchor_x': 'center',
+            'color': (255, 215, 0, 255),
+            'dpi': 96,
+        }
+        self.font_item_selected = {
+            'font_name': '黑体',
+            'font_size': 42,
+            'bold': False,
+            'italic': False,
+            'anchor_y': 'center',
+            'anchor_x': 'center',
+            'color': (255, 215, 0, 255),
+            'dpi': 96,
+        }
+        # 列表项目
         l = []
-        l.append(EntryMenuItemS('up:', self.set_key, key.symbol_string(key_dict['up:'])))
-        l.append(EntryMenuItemS('down:', self.set_key, key.symbol_string(key_dict['down:'])))
-        l.append(EntryMenuItemS('left:', self.set_key, key.symbol_string(key_dict['left:'])))
-        l.append(EntryMenuItemS('right:', self.set_key, key.symbol_string(key_dict['right:'])))
-        l.append(EntryMenuItemS('fire:', self.set_key, key.symbol_string(key_dict['fire:'])))
-        l.append(EntryMenuItemS('pause:', self.set_key, key.symbol_string(key_dict['pause:'])))
-        l.append(MenuItem('Back', self.back_to_mainmenu))
+        l.append(EntryMenuItemS('上:', self.set_key, key.symbol_string(key_dict['up:'])))
+        l.append(EntryMenuItemS('下:', self.set_key, key.symbol_string(key_dict['down:'])))
+        l.append(EntryMenuItemS('左:', self.set_key, key.symbol_string(key_dict['left:'])))
+        l.append(EntryMenuItemS('右:', self.set_key, key.symbol_string(key_dict['right:'])))
+        l.append(EntryMenuItemS('开火:', self.set_key, key.symbol_string(key_dict['fire:'])))
+        l.append(EntryMenuItemS('暂停:', self.set_key, key.symbol_string(key_dict['pause:'])))
+        l.append(MenuItem('返回', self.back_to_mainmenu))
         self.create_menu(l)
 
     def back_to_mainmenu(self):
@@ -87,3 +133,10 @@ class SettingScene(Scene):
         super().__init__()
         self.menu = SettingMenu()
         self.add(self.menu)
+        self.bg = Sprite('pic/startbg.jpg')
+        self.bg.position = 428, 280
+        self.add(self.bg, z=-10)
+        self.border = Sprite('pic/setbg.png')
+        self.border.position = 425, 270
+        self.border.scale = 2
+        self.add(self.border, z=-5)

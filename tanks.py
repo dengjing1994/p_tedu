@@ -15,7 +15,7 @@ class Tank(Actor):
         super().__init__(x, y, hw, hh, c)
         self.sprite_list = []
         if len(args) != 4:
-            args = ('t0.png', 't1.png', 't2.png', 't3.png')
+            args = ('pic/t0.png', 'pic/t1.png', 'pic/t2.png', 'pic/t3.png')
         self.set_sprite(args)
         self.anchor = (0, 0)
         self.scale = 0.2
@@ -31,7 +31,7 @@ class Tank(Actor):
             sd.do(Hide())
             self.add(sd)
             self.sprite_list.append(sd)
-        self.sprite_list[0].do(Show())
+        self.sprite_list[self.direction].do(Show())
 
     def fire(self, dt):
         '''开火'''

@@ -13,9 +13,9 @@ class Explosion(Setting):
     
     def get_sprite(self):
         l = []
-        l.append(image.AnimationFrame(image.load('1.png'), 0.1))
-        l.append(image.AnimationFrame(image.load('2.png'), 0.1))
-        l.append(image.AnimationFrame(image.load('3.png'), 0.1))
+        l.append(image.AnimationFrame(image.load('pic/1.png'), 0.1))
+        l.append(image.AnimationFrame(image.load('pic/2.png'), 0.1))
+        l.append(image.AnimationFrame(image.load('pic/3.png'), 0.1))
         images = image.Animation(l)
         self.sprite = Sprite(images)
         self.sprite.scale = 0.5
@@ -33,12 +33,12 @@ class ExplosionP(Explosion):
     
     def get_sprite(self):
         l = []
-        l.append(image.AnimationFrame(image.load('b001.png'), 0.1))
-        l.append(image.AnimationFrame(image.load('b002.png'), 0.1))
-        l.append(image.AnimationFrame(image.load('b003.png'), 0.1))
-        l.append(image.AnimationFrame(image.load('b004.png'), 0.1))
-        l.append(image.AnimationFrame(image.load('b005.png'), 0.1))
-        l.append(image.AnimationFrame(image.load('b006.png'), 0.1))
+        l.append(image.AnimationFrame(image.load('pic/b001.png'), 0.1))
+        l.append(image.AnimationFrame(image.load('pic/b002.png'), 0.1))
+        l.append(image.AnimationFrame(image.load('pic/b003.png'), 0.1))
+        l.append(image.AnimationFrame(image.load('pic/b004.png'), 0.1))
+        l.append(image.AnimationFrame(image.load('pic/b005.png'), 0.1))
+        l.append(image.AnimationFrame(image.load('pic/b006.png'), 0.1))
         images = image.Animation(l)
         self.sprite = Sprite(images)
         self.add(self.sprite)
