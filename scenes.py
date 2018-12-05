@@ -522,14 +522,20 @@ class MajorScene(Scene):
             director.push(self.scene())
 
 
-class GameOverLayer(ColorLayer):
+class GameOverLayer(Layer):
     def __init__(self, score):
-        size = director.get_window_size()
-        super().__init__(255, 215, 0, 200, size[0], size[1])
+        super().__init__()
+        self.bg = Sprite('pic/bg11.jpg')
+        self.bg.position = 428, 280
+        self.add(self.bg, z=-10)
+        self.border = Sprite('pic/setbg.png')
+        self.border.position = 425, 300
+        self.border.scale_x = 2.5
+        self.add(self.border, z=-5)
         self.get_score = str(score)
         s = '得分：' + self.get_score
         self.score = Label(s, font_name='WenQuanYi Micro Hei', font_size=36, color=(0, 0, 0, 255))
-        self.score.position = 300, 400
+        self.score.position = 300, 350
         self.add(self.score)
         self.create_entry()
         self.name = ''
@@ -539,9 +545,9 @@ class GameOverLayer(ColorLayer):
         self.entry.font_title['font_name'] = 'WenQuanYi Micro Hei'
         self.entry.font_title['color'] = (0, 0, 0, 255)
         self.entry.font_item['font_name'] = 'WenQuanYi Micro Hei'
-        self.entry.font_item['color'] = (255, 0, 0, 255)
+        self.entry.font_item['color'] = (0, 0, 0, 255)
         self.entry.font_item_selected['font_name'] = 'WenQuanYi Micro Hei'
-        self.entry.font_item_selected['color'] = (255, 0, 0, 255)
+        self.entry.font_item_selected['color'] = (0, 0, 0, 255)
         l = []
         l.append(EntryMenuItem('姓名:', self.update_text, '', max_length=7))
         l.append(MenuItem('确认', self.save))
