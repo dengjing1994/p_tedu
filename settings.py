@@ -5,6 +5,7 @@ from cocos.director import director
 from cocos.menu import Menu, MenuItem, EntryMenuItem
 from cocos.scene import Scene
 from cocos.sprite import Sprite
+from cocos.scenes.transitions import FlipAngular3DTransition
 
 screen_width = 720
 screen_height = 600
@@ -27,6 +28,25 @@ iron_list = [
     (550, 50), (550, 1250),
     (950, 650)
 ]
+
+gifts_list = [
+    (50,750),
+    (700,150),
+    (300,1050),
+    (550, 300),
+    (1000,600),
+    (100,450),
+    (520,520)
+]
+
+client_key_dict = {
+    'up:': 0,
+    'down:': 0,
+    'left:': 0,
+    'right:': 0,
+    'fire:': 0,
+    'pause:': 0
+}
 
 key_dict = {
     'up:':key.UP,
@@ -52,6 +72,7 @@ class EntryMenuItemS(EntryMenuItem):
         else:
             self._value.append(key.symbol_string(text))
             key_dict[self._label] = text
+            print(key_dict)
             self._calculate_value()
         return True
     
@@ -100,17 +121,18 @@ class SettingMenu(Menu):
         }
         # 列表项目
         l = []
-        l.append(EntryMenuItemS('上:', self.set_key, key.symbol_string(key_dict['up:'])))
-        l.append(EntryMenuItemS('下:', self.set_key, key.symbol_string(key_dict['down:'])))
-        l.append(EntryMenuItemS('左:', self.set_key, key.symbol_string(key_dict['left:'])))
-        l.append(EntryMenuItemS('右:', self.set_key, key.symbol_string(key_dict['right:'])))
-        l.append(EntryMenuItemS('开火:', self.set_key, key.symbol_string(key_dict['fire:'])))
-        l.append(EntryMenuItemS('暂停:', self.set_key, key.symbol_string(key_dict['pause:'])))
+        l.append(EntryMenuItemS('up:', self.set_key, key.symbol_string(key_dict['up:'])))
+        l.append(EntryMenuItemS('down:', self.set_key, key.symbol_string(key_dict['down:'])))
+        l.append(EntryMenuItemS('left:', self.set_key, key.symbol_string(key_dict['left:'])))
+        l.append(EntryMenuItemS('right:', self.set_key, key.symbol_string(key_dict['right:'])))
+        l.append(EntryMenuItemS('fire:', self.set_key, key.symbol_string(key_dict['fire:'])))
+        l.append(EntryMenuItemS('pause:', self.set_key, key.symbol_string(key_dict['pause:'])))
         l.append(MenuItem('返回', self.back_to_mainmenu))
         self.create_menu(l)
 
     def back_to_mainmenu(self):
         director.pop()
+        director.next_scene = FlipAngular3DTransition(director.next_scene)
 
     def set_key(self, value):
         if value == '':
@@ -137,6 +159,8 @@ class SettingScene(Scene):
         self.bg.position = 428, 280
         self.add(self.bg, z=-10)
         self.border = Sprite('pic/setbg.png')
-        self.border.position = 425, 270
+        self.border.position = 425, 250
         self.border.scale = 2
+        self.border.scale_y = 0.9
+        self.border.scale_x = 1.1
         self.add(self.border, z=-5)

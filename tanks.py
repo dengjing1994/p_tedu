@@ -23,7 +23,11 @@ class Tank(Actor):
         # 弹药选择
         self.b_list = [Bullet, Bullet_t1]
         self.b_level = 0
+        # 血条
+        self.durability = 3
+        self.add_lifebar()
         self.schedule(self.update_attr) # 每帧调用以更新相关属性
+        self.schedule(self.update_lifebar) # 更新血条
 
     def set_sprite(self, args):
         for i in args:
@@ -39,8 +43,30 @@ class Tank(Actor):
             # 剩余cd时间为0时开火，在自身位置产生一个子弹对象，并返回给调用者
             bullet = self.b_list[self.b_level](self.cshape_x, self.cshape_y, self.direction, self.hh, self.c)
             self.cdtime = 1 # 进入cd时间
-            self.b_level = (self.b_level + 1) % 2 # 测试换炮弹
+            # self.b_level = (self.b_level + 1) % 2 # 测试换炮弹
             return bullet
+    
+    def add_lifebar(self):
+        p_list = ['pic/life01.png', 'pic/life02.png', 'pic/life03.png', 'pic/life04.png']
+        self.lifebar_list = []
+        for i in range(4):
+            lifebar = Sprite(p_list[i])
+            lifebar.anchor = (0, 0)
+            lifebar.scale_x = 3
+            lifebar.scale_y = 5
+            lifebar.y += 300
+            lifebar.do(Hide())
+            self.lifebar_list.append(lifebar)
+            self.add(lifebar)
+        self.lifebar_list[3 - self.durability].do(Show())
+    
+    def get_hit(self):
+        self.durability -= 1
+    
+    def update_lifebar(self, dt):
+        for i in self.lifebar_list:
+            i.do(Hide())
+        self.lifebar_list[3 - self.durability].do(Show())
 
     def move_up(self, dt):
         '''向上移动'''
@@ -93,39 +119,52 @@ class Panzer(Tank):
         for i in self.sprite_list:
             i.color = (255, 0, 255)
         self.ai_direction = [1, 0, 0, 0]
-        self.schedule(self.ai_move)
+        self.durability = 1
     
-    def ai_move(self, dt):
-        '''简易ai移动判断'''
-        if self.ai_direction[0]:
-            if self.can_move[0] and not self.cshape_y >= 1300:
-                self.move_up(dt)
+    def add_lifebar(self):
+        self.lifebar = Sprite('pic/life01.png')
+        self.lifebar.anchor = (0, 0)
+        self.lifebar.scale_x = 2
+        self.lifebar.scale_y = 5
+        self.lifebar.y += 300
+        self.add(self.lifebar)
+    
+    def update_lifebar(self, dt):
+        pass
+
+
+def ai_move(panzer, dt):
+    '''简易ai移动判断'''
+    if panzer.ai_direction[0]:
+        if panzer.can_move[0] and not panzer.cshape_y >= 1300:
+            panzer.move_up(dt)
+        else:
+            if randint(0, 1) == 0:
+                panzer.ai_direction = [0, 0, 1, 0]
             else:
-                if randint(0, 1) == 0:
-                    self.ai_direction = [0, 0, 1, 0]
-                else:
-                    self.ai_direction = [0, 0, 0, 1]
-        elif self.ai_direction[1]:
-            if self.can_move[1] and not self.cshape_y <= 0:
-                self.move_down(dt)
+                panzer.ai_direction = [0, 0, 0, 1]
+    elif panzer.ai_direction[1]:
+        if panzer.can_move[1] and not panzer.cshape_y <= 0:
+            panzer.move_down(dt)
+        else:
+            if randint(0, 1) == 0:
+                panzer.ai_direction = [0, 0, 1, 0]
             else:
-                if randint(0, 1) == 0:
-                    self.ai_direction = [0, 0, 1, 0]
-                else:
-                    self.ai_direction = [0, 0, 0, 1]
-        elif self.ai_direction[2]:
-            if self.can_move[2] and not self.cshape_x <= 0:
-                self.move_left(dt)
+                panzer.ai_direction = [0, 0, 0, 1]
+    elif panzer.ai_direction[2]:
+        if panzer.can_move[2] and not panzer.cshape_x <= 0:
+            panzer.move_left(dt)
+        else:
+            if randint(0, 1) == 0:
+                panzer.ai_direction = [1, 0, 0, 0]
             else:
-                if randint(0, 1) == 0:
-                    self.ai_direction = [1, 0, 0, 0]
-                else:
-                    self.ai_direction = [0, 1, 0, 0]
-        elif self.ai_direction[3]:
-            if self.can_move[3] and not self.cshape_x >= 1300:
-                self.move_right(dt)
+                panzer.ai_direction = [0, 1, 0, 0]
+    elif panzer.ai_direction[3]:
+        if panzer.can_move[3] and not panzer.cshape_x >= 1300:
+            panzer.move_right(dt)
+        else:
+            if randint(0, 1) == 0:
+                panzer.ai_direction = [1, 0, 0, 0]
             else:
-                if randint(0, 1) == 0:
-                    self.ai_direction = [1, 0, 0, 0]
-                else:
-                    self.ai_direction = [0, 1, 0, 0]
+                panzer.ai_direction = [0, 1, 0, 0]
+    

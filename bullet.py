@@ -8,6 +8,7 @@ from base import Actor
 class Bullet(Actor):
     '''炮弹'''
     def __init__(self, x, y, direction, m, c=0, hw=20, hh=20, *args):
+        self.m = m
         if direction == 0:
             y += m
         elif direction == 1:
@@ -20,6 +21,7 @@ class Bullet(Actor):
         if len(args) != 4:
             args = ('pic/zidan0.png', 'pic/zidan1.png', 'pic/zidan2.png', 'pic/zidan3.png')
         self.s = Sprite(args[direction])
+        self.s.color = (255, 165, 0)
         self.add(self.s)
         self.anchor = (0, 0)
         self.scale = 0.1
@@ -42,4 +44,4 @@ class Bullet(Actor):
 class Bullet_t1(Bullet):
     def __init__(self, *args):
         super().__init__(*args)
-        self.s.color = (255, 0, 0)
+        self.s.color = (255, 165, 0)
