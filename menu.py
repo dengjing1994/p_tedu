@@ -126,5 +126,10 @@ class ConnectMenu(Menu):
         director.push(self.gamescene)
 
     def on_back_to_mainmenu(self):
+        try:
+            self.host.sfd.close()
+            self.client.sfd.close()
+        except Exception:
+            pass
         director.pop()
         director.next_scene = FlipAngular3DTransition(director.next_scene)

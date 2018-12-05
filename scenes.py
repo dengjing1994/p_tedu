@@ -43,7 +43,7 @@ class MajorLayer(Layer):
         self.toremove = set()
         self.blocking_pair = []
         # 设置敌方坦克数量
-        self.totle_enermy_num = 25
+        self.totle_enermy_num = 1
         self.active_enermy_num = 0
         self.enermy_point_list = [(1250, 50), (1250, 650), (1250, 1250)]
         # 子弹计数
@@ -186,8 +186,7 @@ class MajorLayer(Layer):
             enermy = Panzer(*self.enermy_point_list[i])
             self.enermy_dict[enermy] = 'e' + str(self.totle_enermy_num)
             self.add(enermy, z=enermy.z, name=self.enermy_dict[enermy])
-            # 可用敌人数量减1
-            self.totle_enermy_num -= 1
+            self.totle_enermy_num += 1
             self.active_enermy_num += 1
     
     def add_gift(self):
@@ -327,7 +326,7 @@ class MajorLayer(Layer):
                     pass
                 elif o2 in self.bullet_dicte and o1 in self.enermy_dict:
                     pass
-                elif o2 in self.gifts_dict:
+                elif o1 in self.gifts_dict:
                     pass
                 else:
                     self.toremove.add(o1)

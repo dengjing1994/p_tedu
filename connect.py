@@ -172,6 +172,7 @@ class MulGameSceneC(MajorScene):
         self.add(self.majorlayer)
         self.majorlayer.unschedule(self.majorlayer.ai_move)
         self.majorlayer.unschedule(self.majorlayer.ai_fire)
+        self.majorlayer.unschedule(self.majorlayer.update_gift)
     
     def p(self, dt):
         super().p(dt)
